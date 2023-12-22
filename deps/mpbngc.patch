@@ -1,0 +1,31 @@
+--- downloads/mpbngc.f	2010-08-11 09:13:41.000000000 -0400
++++ mpbngc.f	2023-12-22 15:47:44.823103717 -0500
+@@ -184,6 +184,9 @@
+ C
+ 
+       IF (IERR.LT.0) THEN
++         IF (NOUT.EQ.23) THEN
++             OPEN(UNIT=23,FILE='bundleout.txt',STATUS='NEW')
++         END IF
+          CALL ITERA(N,X,IX,BL,BU,M,MG,F,FASG,MC,IC,CL,CU,CG,RL,LMAX,
+      &              GAM,EPS,FEAS,JMAX,JKP,MJKP,MM,MP1,NITER,NFASG,NOUT,
+      &              IPRINT,IERR,ZERO,ZER0,WORK(LSG),WORK(LFK),
+@@ -192,6 +195,9 @@
+      &              WORK(LSUML),WORK(LH),WORK(LCF),WORK(LCFD),
+      &              WORK(LAF),WORK(LAFD),WORK(LS),WORK(LG),WORK(LAZ),
+      &              WORK(LAR),IWORK(LIA),IWORK(LIAA),IUSER,USER)
++         IF (NOUT.EQ.23) THEN
++             CLOSE(23)
++         END IF
+       END IF
+       RETURN
+       END
+@@ -822,7 +828,7 @@
+ C
+ C**********************************************************
+ C
+-      DATA FORM1 /'(1X,''Iter:'',I4,''  Nfun:'',I4,''  f'',IZ,''(x) ='',
++      DATA FORM1 /'(1X,''Iter:'',I6,''  Nfun:'',I6,''  f'',IZ,''(x) ='',
+      &G14.7,''     Eps ='',G14.7)'/
+       DATA FORM2 /'(16X,''       f'',IZ,''(x) ='',G14.7)'/
+       DATA FORM3 /'(16X,''        x('',IZ,'') ='',G14.7)'/

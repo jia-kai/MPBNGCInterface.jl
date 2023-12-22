@@ -180,8 +180,6 @@ function BundleProblem(n::Int64, fasg::Function, x::Vector{Float64},
 			lbc::Vector{Float64}, ubc::Vector{Float64}, 
 			C::Matrix{Float64})
 	
-	check_initial_point(n, x)
-
 	nobj = 1
 	nlin = length(lbc)
 	ngcon = 0

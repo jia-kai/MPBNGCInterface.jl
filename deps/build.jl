@@ -1,4 +1,4 @@
-# File is based in 
+# File is based in
 # [url](https://github.com/luchr/ODEInterface.jl/blob/master/deps/build.jl).
 # Just a few changes have been made.
 
@@ -9,47 +9,49 @@
 
 Download and untar source code
 to `/usr`.  If the subdirectory `usr`
-does not exist, it will be made. 
+does not exist, it will be made.
 """
 function get_mpbngc(dir_of_deps::String)
 
 	if Sys.iswindows()
-		# Use Julia's build in functions 
+		# Use Julia's build in functions
+        throw(ErrorException("Windows is not supported since we need patch."))
 		FILEN="mpbngc"
 		URL = "http://napsu.karmitsa.fi/proxbundle/pb/"
-		if !isdir("$dir_of_deps/usr") 
+		if !isdir("$dir_of_deps/usr")
 			mkdir("$dir_of_deps/usr")
 		end
 		download(URL*"$FILEN"*".f", "$dir_of_deps/usr/$FILEN.f")
 		download(URL*"pllpb2"*".f", "$dir_of_deps/usr/pllpb2.f")
 		download(URL*"plqdf1"*".f", "$dir_of_deps/usr/plqdf1.f")
 
+
 		# run(`"wget" "-P" "$dir_of_deps\usr" "$URL"`)
 		# run(`"tar" "xvzf" "$dir_of_deps\usr\$FILEN.tar.gz" -C "$dir_of_deps\usr"`)
 
 		# if !isdir("$dir_of_deps\usr\downloads")
 		# 	mkdir("$dir_of_deps\usr\downloads")
-		# end 
+		# end
 		# run(`"mv" "$dir_of_deps\usr\$FILEN.tar.gz" "$dir_of_dep\usr\downloads"`)
-	else 
+	else
 		FILEN="mpbngc"
 		URL = "http://napsu.karmitsa.fi/proxbundle/pb/"*"$FILEN"*".tar.gz"
 		run(`"$mkdir" "-p" "$dir_of_deps/usr"`)
 		run(`"wget" "-P" "$dir_of_deps/usr" "$URL"`)
 		run(`"tar" "xvzf" "$dir_of_deps/usr/$FILEN.tar.gz" -C "$dir_of_deps/usr"`)
-
+		run(`"patch" "-d" "$dir_of_deps/usr" "-i" "../mpbngc.patch"`)
 		run(`"mkdir" "-p" "$dir_of_deps/usr/downloads"`)
 		run(`"mv" "$dir_of_deps/usr/$FILEN.tar.gz" "$dir_of_deps/usr/downloads"`)
 	end
-	
+
 	return nothing
 
 end
 
-dir_of_this_file = dirname(@__FILE__) 
-dir_of_deps = normpath(dir_of_this_file) 
+dir_of_this_file = dirname(@__FILE__)
+dir_of_deps = normpath(dir_of_this_file)
 if !isdir(dir_of_deps)
-  error(string("Cannot find deps directory. I tried: ", dir_of_deps)) 
+  error(string("Cannot find deps directory. I tried: ", dir_of_deps))
 end
 
 get_mpbngc(dir_of_deps)
@@ -61,7 +63,7 @@ end
 
 windows_flag = Sys.iswindows()
 apple_flag = Sys.isapple()
-file_extension = apple_flag ? ".dylib" : windows_flag ? ".dll" : ".so" 
+file_extension = apple_flag ? ".dylib" : windows_flag ? ".dll" : ".so"
 
 obj_files = []
 
@@ -109,7 +111,7 @@ function compile_gfortran(path::AbstractString, basename::AbstractString,
     if windows_flag
       cmd_i64 = `"$gfortran"  $comp_flags $flags_i64 -o "$ofile"  "$ffile"`
     else
-      cmd_i64 = `"$gfortran"  $comp_flags $flags_i64 -o $ofile  $ffile` 
+      cmd_i64 = `"$gfortran"  $comp_flags $flags_i64 -o $ofile  $ffile`
     end
     verbose && println(cmd_i64)
     run(cmd_i64)
@@ -133,7 +135,7 @@ end
 
 function link_gfortran(path::AbstractString, basenames, options::Dict=Dict())
   link_flags = windows_flag ? [ "-shared" ] : [ "-shared", "-fPIC" ]
-  
+
   if get(options, "build_i64", true)
     i64_obj = map( name -> joinpath(path,string(name,".o")), basenames )
     sofile = joinpath(path,string(basenames[1],file_extension))
@@ -192,14 +194,14 @@ end
 # Supporting only `Int64` integers with `gfortran`
 options = Dict("build_i64" => true, "build_i32" => false)
 
-dir_of_src = normpath(joinpath(dir_of_this_file,"usr")) 
+dir_of_src = normpath(joinpath(dir_of_this_file,"usr"))
 if !isdir(dir_of_src)
-  error(string("Cannot find deps/dir directory. I tried: ", dir_of_src)) 
+  error(string("Cannot find deps/dir directory. I tried: ", dir_of_src))
 end
 
 
-compile_plqdf1(dir_of_src, options) 
-compile_pllpb2(dir_of_src, options) 
+compile_plqdf1(dir_of_src, options)
+compile_pllpb2(dir_of_src, options)
 build_mpbngc(dir_of_src, options)
 
 del_obj_files()

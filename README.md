@@ -1,3 +1,6 @@
+Note: this is my modified MPBNGCInterface with python integration support. See
+[trafs](https://github.com/jia-kai/trafs).
+
 [![MPBNGCInterface.jl Tests](https://github.com/milzj/MPBNGCInterface.jl/actions/workflows/test.yml/badge.svg)](https://github.com/milzj/MPBNGCInterface.jl/actions)
 [![DOI](https://zenodo.org/badge/236770302.svg)](https://doi.org/10.5281/zenodo.15760332)
 
@@ -5,22 +8,22 @@
 # MPBNGCInterface.jl
 
 MPBNGCInterface.jl is a Julia module that interfaces
-the Fortran77 code 
+the Fortran77 code
 [Multiobjective Proximal Bundle Method `MPBNGC`](http://napsu.karmitsa.fi/proxbundle/).
 
 
 The [Multiobjective Proximal Bundle Method `MPBNGC`](http://napsu.karmitsa.fi/proxbundle/)
 can be applied to the nonsmooth, nonconvex multiobjective optimization problem
-   
-		min f₁(x), ..., fₘ(x) 
-		s.t. 	x ∈  Rⁿ, 
+
+		min f₁(x), ..., fₘ(x)
+		s.t. 	x ∈  Rⁿ,
 		 	lb ≤ x ≤  ub,
-			lbc ≤ C' x ≤ ubc, 
+			lbc ≤ C' x ≤ ubc,
 			fᵢ(x) ≤ 0,		i = m+1, ..., m+ngcon,
 
-where 
-`n`, `m`, `nlin`, `ngcon` is the number of 
-optimization variables, 
+where
+`n`, `m`, `nlin`, `ngcon` is the number of
+optimization variables,
 objective functions,
 linear constraints,
 general constraints, respectively.
@@ -34,7 +37,7 @@ and `C'` is the transposed of `C`.
 
 ## Installation
 
-You can install `MPBNGCInterface.jl` through the 
+You can install `MPBNGCInterface.jl` through the
 [Julia Package Manager](https://docs.julialang.org/en/v1/stdlib/Pkg/index.html)
 by executing the following command in the Pkg REPL:
 
@@ -43,12 +46,12 @@ add https://github.com/milzj/MPBNGCInterface.jl.git
 ```
 
 The command should download the module and compile
-the Bundle method **if** you have `gfortran` installed. 
+the Bundle method **if** you have `gfortran` installed.
 
 The code `build.jl` located in `deps`
 when executed attempts to download the
 [source code](http://napsu.karmitsa.fi/proxbundle/pb/mpbngc.tar.gz)
-of the 
+of the
 [Proximal Bundle Method `MPBNGC`](http://napsu.karmitsa.fi/proxbundle/)
 and tries to compile it together with its dependencies.
 
@@ -66,7 +69,7 @@ Moreover, it has been tested on Windows 10 Education (version 10.0.16299) (64bit
 
 ### Compilation with gfortan
 
-This code uses `gfortran` to compile the 
+This code uses `gfortran` to compile the
 [Proximal Bundle Method `MPBNGC`](http://napsu.karmitsa.fi/proxbundle/).
 
 The interface does not support compilers other than `gfortan`.
@@ -76,76 +79,76 @@ The interface does not support compilers other than `gfortan`.
 You can download the
 [Proximal Bundle Method `MPBNGC`](http://napsu.karmitsa.fi/proxbundle/)
 manually and use your favourite compiler flags to compile
-and build `mpbngc.f` together with its dependences. 
+and build `mpbngc.f` together with its dependences.
 
-You would need to create a 
+You would need to create a
 [shared library](https://docs.julialang.org/en/v1/manual/calling-c-and-fortran-code/)
-and place it in the subdirectory `deps/usr`. 
+and place it in the subdirectory `deps/usr`.
 
 ## Manual
 
 There is no user manual or help file available for the module.
 I recommend to have a look at the examples and
-tests to figure out how to use the module. 
+tests to figure out how to use the module.
 
 The objective and constraint functions `fᵢ` need to implemented
-in a single function having the following signature: 
-	
+in a single function having the following signature:
+
 ```julia
 
-function fasg!(n::Int64, x::Vector{Float64}, mm::Int64, 
+function fasg!(n::Int64, x::Vector{Float64}, mm::Int64,
 		f::Vector{Float64}, g::Matrix{Float64})
 
 ```
-even if you consider a single objective optimization problem. 
-Function and subgradient evaluations are stored in 
+even if you consider a single objective optimization problem.
+Function and subgradient evaluations are stored in
 `f` (a vector of length `mm`) and
-`g` (a matrix of size `n x mm`), respectively. 
+`g` (a matrix of size `n x mm`), respectively.
 `f[1:m]` are the objective function values and
-`f[m+1:mm]` the general constraint function values. 
+`f[m+1:mm]` the general constraint function values.
 ("!" is optional.)
 
 If you consider a bound-constrained optimization problem,
-the "types" of the bounds `lb` and `ub` are stored in `ib`. Meaning, 
+the "types" of the bounds `lb` and `ub` are stored in `ib`. Meaning,
 the components of `ib` indicate whether the corresponding
 component of `x` is unconstrained, fixed, bounded from below and/or
-bounded from above. 
+bounded from above.
 The "classification" is performed by the function `classify_bounds`
 called by the inner constructor
 of the mutable struct `BundleProblem` according to
 the rules indicated in the documentation of the function `classify_bounds`
-(see [src/Bounds.jl](./src/Bounds.jl)). The variable `ib` matches 
+(see [src/Bounds.jl](./src/Bounds.jl)). The variable `ib` matches
 the input variable `IX` of the Fortran code of the bundle method.
 
 You can modify `ib` before calling `solveProblem`, which
-calls the Fortran implemenation of the 
-[Proximal Bundle Method `MPBNGC`](http://napsu.karmitsa.fi/proxbundle/). 
+calls the Fortran implemenation of the
+[Proximal Bundle Method `MPBNGC`](http://napsu.karmitsa.fi/proxbundle/).
 
 The bounds `lbc` and `ubc` (if present) get "classified" similarly
-via the same function. The types are stored in `ic` corresponding to 
-the input variable `IC` of the Fortran code. 
+via the same function. The types are stored in `ic` corresponding to
+the input variable `IC` of the Fortran code.
 
-## References 
+## References
 
-A user manual for the 
+A user manual for the
 [Proximal Bundle Method `MPBNGC`](http://napsu.karmitsa.fi/proxbundle/)
 is provided in
 
 M.M. Mäkelä: [Multiobjective proximal bundle method for
 nonconvex nonsmooth optimization: Fortran
-subroutine MPBNGC 2.0](http://napsu.karmitsa.fi/publications/pbncgc_report.pdf). 
+subroutine MPBNGC 2.0](http://napsu.karmitsa.fi/publications/pbncgc_report.pdf).
 Reports of the Department of
 Mathematical Information Technology, Series
 B. Scientific Computing B 13/2003, University of Jyväskylä, Jyväskylä (2003)
- 
-Further details are provided in 
+
+Further details are provided in
 
 M.M. Mäkelä, N. Karmitsa, O. Wilppu: [Proximal Bundle Method for Nonsmooth
 and Nonconvex Multiobjective Optimization](http://napsu.karmitsa.fi/publications/pbm.pdf)
-in [Mathematical Modeling and Optimization of Complex Structures](http://link.springer.com/book/10.1007/978-3-319-23564-6). 
-T. Tuovinen, S. Repin and P. Neittaanmäki (eds.), 
-Vol. 40 of 
-[Computational Methods in Applied Sciences](https://link.springer.com/bookseries/6899), 
+in [Mathematical Modeling and Optimization of Complex Structures](http://link.springer.com/book/10.1007/978-3-319-23564-6).
+T. Tuovinen, S. Repin and P. Neittaanmäki (eds.),
+Vol. 40 of
+[Computational Methods in Applied Sciences](https://link.springer.com/bookseries/6899),
 pp. 191--204, Springer, 2016.
 
 ## Acknowledgments
@@ -156,10 +159,10 @@ for making the source code of the
 available online. I would like to acknowledge
 [Prof. Dr. Michael Ulbrich](https://www-m1.ma.tum.de/bin/view/Lehrstuhl/MichaelUlbrich)
 and [Dr. Christian Ludwig](https://github.com/luchr)
-for explaining me how to interface Fortran code. 
+for explaining me how to interface Fortran code.
 I appreciate very much that Christian took time to meet with me and to answer questions
-I had about interfacing Fortran(77) code, and that he has allowed me to reuse 
-large parts of his [ODEInterface.jl](https://github.com/luchr/ODEInterface.jl) code. 
+I had about interfacing Fortran(77) code, and that he has allowed me to reuse
+large parts of his [ODEInterface.jl](https://github.com/luchr/ODEInterface.jl) code.
 
 ## Author
 
